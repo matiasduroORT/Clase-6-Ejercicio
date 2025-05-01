@@ -1,8 +1,8 @@
 ### Ejercicio Practico pre Parcial
 
-## Crear Fork del repositorio
-## Realizar clone del mismo
-## Instalar las dependencias
+## Crear Fork del repositorio OK
+## Realizar clone del mismo OK
+## Instalar las dependencias 
 ## Agregar Variables de entorno
 
 ## 1- Crear model de Producto
