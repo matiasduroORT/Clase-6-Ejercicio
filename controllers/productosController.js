@@ -1,4 +1,4 @@
-import Producto from "../models/Producto";
+import Producto from "../models/Producto.js";
 import bcrypt from "bcryptjs";
 
 export const home = (req, res) => {
@@ -15,36 +15,35 @@ export const getProductos = async (req, res) => {
 }
 
 export const crearProducto = async (req, res) => {
+
+    if (!req.body.nombre || !req.body.precio || !req.body.categoria || !req.body.stock){
+        return res.status(400).json({error: "Debe ingresar todos los datos."})
+    };
+
     const { nombre, precio, categoria, stock} = req.body;
 
-    if (!nombre, !precio, !categoria, !stock){
-        return res.status(400).json({error: "Debe ingresar todos los datos."})
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     const producto = {
-        nombre,
-        precio,
-        categoria,
-        stock
-    }
+        nombre: nombre,
+        precio: precio,
+        categoria: categoria,
+        stock: stock
+    };
 
     try {
         const nuevoProducto = await Producto.create(producto);
         res.status(201).json(nuevoProducto);
     } catch (error) {
+        console.log(error.message)
         res.status(500).json({error: "Error, no se pudo crear el nuevo producto"});
     }
-}
+};
 
-async function buscarProductoPorId(id){
+
+export const buscarProductoPorId = async (req,res) =>{
     try {
-        const res = await fetch()
-        const datosProducto = await res.json()
-        return datosPRoducto.name
+        const producto = await Producto.findById(req.params.id)
+        res.status(200).json(producto)
     } catch (error) {
-        console.log("El error fue: ", );
-        return null 
+        res.status(500).json({error: "No se pudo encontrar el producto."});
     }
-}
+};
