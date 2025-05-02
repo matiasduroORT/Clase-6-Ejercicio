@@ -78,7 +78,7 @@ export const agregarPokemon = async (req, res) => {
 
 }
 
-async function obtenerPokemonNombre(id){
+export async function obtenerPokemonNombre(id){
     try {
 
     const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
