@@ -3,20 +3,23 @@ import {
     home,
     getAlumnos,
     getAlumnosById,
+    getAlumnosSearch,
     CrearAlumno,
+    login
 } from '../controllers/alumnosController.js'
+import { protegerRuta } from '../middlewares/authMiddlewares.js';
 
 const router = express.Router()
 
+router.post('/api/login', login)
 
 router.get('/', home)
 router.get('/api/alumnos', getAlumnos)
 router.get('/api/alumnos/:id', getAlumnosById)
-router.post('/api/alumnos', CrearAlumno)
+router.get('/api/search/alumnos', getAlumnosSearch)
 
-// Crear un nuevo Endpoint, GET, que la url sea /api/alumnos/pokemon/:id
-// Que el controlador, reciba por query params, pokemonID 
-// Y que le agregue el name del pokemon al alumno
+
+router.post('/api/alumnos', protegerRuta , CrearAlumno)
 
 
 export default router

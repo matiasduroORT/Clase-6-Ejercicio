@@ -1,5 +1,7 @@
 import Alumno from "../models/Alumno.js"
 import bcrypt from "bcryptjs";
+import jwt from 'jsonwebtoken'
+
 
 export const home = (req, res) => {
     res.send(`<h1>Home de la API</h1>`)
@@ -8,6 +10,21 @@ export const home = (req, res) => {
 export const getAlumnos = async (req, res) => {
     try {
         const alumnos = await Alumno.find()
+        res.json(alumnos)
+    } catch (error) {
+        res.status(500).json({error: "Error al obtener alumnos"})
+    }
+}
+
+export const getAlumnosSearch = async (req, res) => {
+
+    const {nombre} = req.query;
+
+    try {
+
+        const alumnos = await Alumno.find({
+            nombre: { $regex: `^${nombre}`, $options: 'i'}
+        })
         res.json(alumnos)
     } catch (error) {
         res.status(500).json({error: "Error al obtener alumnos"})
@@ -31,11 +48,12 @@ export const getAlumnosById = async (req, res) => {
 
 export const CrearAlumno = async (req, res) => {  
 
-    // res.json({
-    //     reqBody: req.body,
-    //     reqParams: req.params,
-    //     reqQuery: req.query,
-    // })
+    console.log("Req crear Alumno: ", 
+        { reqUsuario: req.usuario,
+          reqBody: req.body
+        });
+    
+
 
     const { nombre, edad, email, password } = req.body;
     if(!nombre || !edad || !email || !password){
@@ -43,8 +61,6 @@ export const CrearAlumno = async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // const comparada = await bcrypt.compare(password, hashedPassword)
     
     const alumno = {
         nombre,
@@ -62,32 +78,44 @@ export const CrearAlumno = async (req, res) => {
     
 }
 
-export const agregarPokemon = async (req, res) => {
 
-    // req.query = ??
-    // req.params = ??
+export const login = async (req, res) =>{
+    const {email, password} = req.body;
 
-    const alumno = alumnos.find((alumno) => alumno.id == req.params.id)   
-    
-    // hacer el fetch a la api de pokemon, segun el id de req.query
-    const nombrePokemon = obtenerPokemonNombre('??')
+    if(!email || !password){
+        return res.status(400).json({ error: 'Faltan credenciales'})
+    }
 
-    // alumno.pokemon = 
-
-
-
-}
-
-async function obtenerPokemonNombre(id){
     try {
 
-    const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
-    const data = await res.json()
-    return data.name
- 
-} catch (error) {
-    console.log("El error fue: ", );
-    return null 
-}
-    
+        const alumno = await Alumno.findOne({email});
+
+        if(!alumno){
+            return res.status(404).json({ error: 'Alumno no encontrado'})
+        }
+
+        const match = await bcrypt.compare(password, alumno.password)
+
+        if(!match){
+            return res.status(401).json({ error: 'Password incorrecta'})
+        }
+
+
+        // JWT.SIGN
+        // Primer argumento, lo que vas a encriptar
+        // Segundo argumento, la llave para encriptar / desencriptar
+        // Tercer argumento, el tiempo que va a durar ese token
+        const datosEncriptados = { id: alumno._id, email: alumno.email, rol: 'admin'}
+        const JWT_KEY = process.env.JWT_SECRET
+        const token = jwt.sign(
+            datosEncriptados,
+            JWT_KEY,
+            { expiresIn: '1h'}
+        )
+
+        res.json({ accessToken: token})
+        
+    } catch (error) {
+        res.status(500).json({error: 'Error al hacer login'})
+    }
 }
